@@ -26,7 +26,7 @@ function Header() {
         <Nav>
           <Left>
             <Link to="/">
-              <img src="/img/sislogo.png" alt="" />
+              <img src="/img/sislogo.jpg" alt="logo" />
             </Link>
           </Left>
           <Center>
@@ -48,7 +48,7 @@ function Header() {
 export default Header;
 
 const Wrapper = styled.div`
-  background-color: rgba(53, 13, 54, 255);
+  background-color: rgb(242, 15, 181);
   padding: 10px 0;
 `;
 const Container = styled.div`
@@ -69,7 +69,7 @@ const Left = styled.div`
     margin: 0 15px;
   }
   img {
-    width: 100%;
+    width: 160%;
     object-fit: contain;
     animation: rotate 2s linear infinite;
   }

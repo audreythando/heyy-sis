@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectEmail, selectName } from "../features/User/userSlice";
 
-function SidebarList({ title, Icon, creator, addChannel, id, sideEmail }) {
+function SidebarList({ title, Icon, creator, channelName, id, sideEmail }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const name = useSelector(selectName);
@@ -48,7 +48,7 @@ function SidebarList({ title, Icon, creator, addChannel, id, sideEmail }) {
     }
   };
   return (
-    <Container onClick={addChannel ? MakeChannel : SelectChannel}>
+    <Container onClick={channelName ? MakeChannel : SelectChannel}>
       {Icon && <Icon fontSize="small" styles={{ paddingLeft: 20 }} />}
       {Icon ? (
         <h3>{title}</h3>

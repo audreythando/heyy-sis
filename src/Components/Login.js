@@ -4,6 +4,8 @@ import { useDispatch } from "react-redux";
 import styled from "styled-components";
 import { setLogin } from "../features/User/userSlice";
 import { auth, provider } from "../firebase/firebase";
+
+
 function Login() {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -25,11 +27,11 @@ function Login() {
     setLoading(false);
   };
   return (
-    <BackgrounColor>
+    <BackgroundColor>
       <Wrapper>
         <Container>
           <Header>
-            <img src="/img/sislogo.png" alt="" />
+            <img src="/img/sislogo.jpg" alt="logo" />
           </Header>
           <ButtonContainer>
             <button disabled={loading} onClick={SignIn}>
@@ -39,17 +41,18 @@ function Login() {
           </ButtonContainer>
         </Container>
       </Wrapper>
-    </BackgrounColor>
+    </BackgroundColor>
   );
 }
 
 export default Login;
-const BackgrounColor = styled.div`
+const BackgroundColor = styled.div`
   background-repeat: no-repeat;
   background-size: cover;
   height: 100vh;
   background-position: center center;
-  background-image: url("/img/sislogo.png");
+  background-color:rgb(242, 15, 181);
+  /* background-image: url("/img/back.jpg"); */
 `;
 
 const Wrapper = styled.div`
@@ -78,10 +81,10 @@ const Container = styled.div`
 const Header = styled.div`
   width: 8rem;
   margin: 0 auto;
-  margin-top: 20px;
-  animation: Rotate 2s linear infinite;
+  margin-top: 50px;
+  animation: rotate 6s linear  infinite;
   img {
-    width: 100%;
+    width: 120%;
     object-fit: contain;
   }
 `;

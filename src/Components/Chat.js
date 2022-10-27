@@ -20,6 +20,7 @@ import {
   selectName,
   selectPhoto,
 } from "../features/User/userSlice";
+import Messager from './Messager'
 import { useNavigate } from "react-router-dom";
 
 function Chat() {
@@ -91,7 +92,7 @@ function Chat() {
       </Header>
       <Messanger>
         {portfo.map((post) => (
-          <Messanger
+          <Messager
             key={post?.id}
             caption={post?.data().input}
             username={post?.data().username}
@@ -110,7 +111,7 @@ function Chat() {
             onChange={(e) => setInput(e.target.value)}
             type="text"
           />
-          <button disabled={loading} onClick={Submit}>
+          <button disable={loading} onClick={Submit}>
             {loading ? "sending" : "send"}
           </button>
         </InputContainer>

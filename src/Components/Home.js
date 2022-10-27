@@ -9,7 +9,15 @@ function Home() {
 
   return (
     <Container>
-      Weclome to my slack-clone <span>{shortend}</span>
+      Welcome to Hey Sis 
+      A safe space for women who 
+      have gone through abuse 
+      or are going through abuse . 
+      Hey Sis is here for you.
+      Meet other survivors , 
+      talk to psychologists ,report an abuser,
+      get moral support from your sponsor. 
+       <span></span>
     </Container>
   );
 }
