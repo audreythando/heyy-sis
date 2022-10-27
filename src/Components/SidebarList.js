@@ -59,8 +59,8 @@ function SidebarList({ title, Icon, creator, addChannel, id, sideEmail }) {
             {title}
           </Span>
           <Card>
-            <h4>Creator:</h4>
-            <h4>{creator}</h4>
+            <h4>creator</h4>
+            <h4> {creator}</h4>
           </Card>
 
           <Deletes onClick={deleteSibarChannel} />
