@@ -6,10 +6,9 @@ import { selectName } from "../features/User/userSlice";
 function Home() {
   const name = useSelector(selectName);
 
-
   return (
     <Container>
-      Welcome to Hey Sis 
+      Welcome to Hey Sis{name ? `, ${name}` : ""}
       A safe space for women who 
       have gone through abuse 
       or are going through abuse . 
