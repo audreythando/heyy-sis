@@ -40,6 +40,7 @@ function App() {
     <Container>
       {name ? (
         <Router>
+        <Home />
           <Header />
           <Column>
             <Sidebar />

@@ -5,7 +5,7 @@ import { selectName } from "../features/User/userSlice";
 
 function Home() {
   const name = useSelector(selectName);
-  const shortend = name ? name.split(" ")[0] : name;
+
 
   return (
     <Container>
