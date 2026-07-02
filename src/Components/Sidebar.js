@@ -1,159 +1,159 @@
-import React,{useState,useEffect} from 'react';
-import db from '../firebase/firebase';
-import { Link } from 'react-router-dom';
-import {collection, onSnapshot, orderBy, query} from 'firebase/firestore'
-import styled from 'styled-components'
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import HomeIcon from '@mui/icons-material/Home';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import InfoIcon from '@mui/icons-material/Info';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import ContactPageIcon from '@mui/icons-material/ContactPage';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddIcon from '@mui/icons-material/Add';
-import SidebarList from './SidebarList';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import styled from "styled-components";
+import HomeIcon from "@mui/icons-material/Home";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import CampaignIcon from "@mui/icons-material/Campaign";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import ConstructionIcon from "@mui/icons-material/Construction";
+import InfoIcon from "@mui/icons-material/Info";
+import ContactPageIcon from "@mui/icons-material/ContactPage";
+import AddIcon from "@mui/icons-material/Add";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import { useSelector } from "react-redux";
+import { selectName } from "../features/User/userSlice";
 
+const NAV_ITEMS = [
+  { to: "/", label: "Home", Icon: HomeIcon, end: true },
+  { to: "/chatroom", label: "Chatroom", Icon: PeopleAltIcon },
+  { to: "/campaigns", label: "Campaigns", Icon: CampaignIcon },
+  { to: "/safe-space", label: "Safe Space", Icon: PsychologyIcon },
+  { to: "/resources", label: "Resources", Icon: ConstructionIcon },
+  { to: "/about-us", label: "About Us", Icon: InfoIcon },
+  { to: "/contacts", label: "Contacts", Icon: ContactPageIcon },
+];
 
-function Sidebar() {
-  const [sidebardata, setSidebarData]=useState([]);
-
-  useEffect(() => {
-    return onSnapshot (
-      query(collection(db,'post'), orderBy('timestamp','desc')),
-    (snapshot) =>setSidebarData(snapshot.docs) 
-    );
-    
-  }, [setSidebarData]);
+function Sidebar({ onAddChannel }) {
+  const name = useSelector(selectName);
 
   return (
     <Container>
+      <Brand>
+        <LogoImg src="/img/sislogo.jpg" alt="Hey Sis logo" />
+        <BrandText>HEY SIS</BrandText>
+      </Brand>
 
-        <SidebarHeader>
-<SidebarInfo>
-<h2> HEY SIS</h2>
+      <UserRow>
+        <FiberManualRecordIcon />
+        <span>{name}</span>
+      </UserRow>
 
-<h3>
-    <FiberManualRecordIcon/>
-    Audrey Thando
-</h3>
-</SidebarInfo>
-<Circle>
-  <Adds/>
-</Circle>
+      <Nav>
+        {NAV_ITEMS.map(({ to, label, Icon, end }) => (
+          <NavItem key={to} to={to} end={end}>
+            <Icon fontSize="small" />
+            <span>{label}</span>
+          </NavItem>
+        ))}
+      </Nav>
 
-        </SidebarHeader>
-        <Link style={{color:'rgba(119, 84, 119, 255)'}}>
-        <SidebarList Icon={HomeIcon} title='Home'/>
-        </Link>
+      <Spacer />
 
-
-<SidebarList Icon={PeopleAltIcon} title='Chatroom'/>
-<SidebarList Icon={CampaignIcon} title='Campaigns'/>
-<SidebarList Icon={PsychologyIcon} title='Safe Space'/>
-<SidebarList Icon={ConstructionIcon} title='Resources'/>
-<SidebarList Icon={InfoIcon} title='About Us'/>
-<SidebarList Icon={ContactPageIcon} title='Contacts'/>
-<SidebarList Icon={ExpandLessIcon} title='Show less'/>
-<hr/>
-<SidebarList Icon={ExpandMoreIcon} title='Show more'/>
-<hr/>
-<SidebarList Icon={AddIcon} addChannelOption title='Add Channel'/>
-    
-    <SidebarContainer>
-    {sidebardata.map((post) =>(
-      <SidebarList key={post.id} id={post.id} title={post?.data().channelName}
-       creator={post?.data().name} 
-       sideEmail={post?.data().email}/>
-  ))}
-    </SidebarContainer>
+      <AddChannelButton onClick={onAddChannel}>
+        <AddIcon fontSize="small" />
+        Add Channel
+      </AddChannelButton>
     </Container>
-    );
-    }
-
-  
- 
-
-export default Sidebar
-
-
-
-const Container=styled.div`
-color:rgba(119, 84, 119, 255);
-background-color:rgb(242, 15, 181) ;
-height:120.8vh;
-display:flex;;
-flex-direction:column;
-border-top:1px solid #49274b;
-
->hr {
-  margin-top:10px;
-  margin-bottom:10px;
-  border:1px solid #49274b;  
-}
-`;
-
-const SidebarContainer = styled.div`
-  overflow-y: auto;
-  margin-top: 10px;
-`;
-
-const Adds = styled.div`
-  background-color: white;
-  height: 10px;
-  width: 10px;
-  border-radius: 20px;
-  border: 1px solid black;
-`;
-
-const SidebarHeader=styled.div`
-display:flex;
-border-bottom: 1px solid #49274b;
-padding:13px;
-
->.MuiSvgIcon-root{
-    padding:8px;
-    color: #49274b;
-    font-size:18px;
-    background-color:white;
-    border-radius:999px;
-}
-`;
-
-const SidebarInfo=styled.div`
-flex: 1;
->h2{
-    font-size:15px;
-    font-weight:900;
-    margin-bottom:5px;
+  );
 }
 
->h3{
-    display:flex;
-    font-size:13;
-    font-weight:400;
-    align-items:center;
-}
+export default Sidebar;
 
-> h3 >.MuiSvgIcon-root{
-    font-size:14px;
-    margin-top:1px;
-    margin-right:2px;
-    color:orange;
-}
+const Container = styled.div`
+  background-color: #f20fb5;
+  min-height: 100vh;
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+  color: white;
 `;
 
-const Circle = styled.div`
-  background-color: white;
-  height: 30px;
-  cursor: pointer;
-  width: 30px;
-  border-radius:500px;
+const Brand = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+`;
+
+const LogoImg = styled.img`
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+  padding: 2px;
+`;
+
+const BrandText = styled.div`
+  font-weight: 800;
+  letter-spacing: 0.5px;
+`;
+
+const UserRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 4px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  margin-bottom: 12px;
+  .MuiSvgIcon-root {
+    font-size: 12px;
+    color: #ffe066;
+  }
+`;
+
+const Nav = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const NavItem = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 120ms ease-out;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  &.active {
+    background-color: white;
+    color: #f20fb5;
+  }
+`;
+
+const Spacer = styled.div`
+  flex: 1;
+`;
+
+const AddChannelButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 10px;
-`;
+  gap: 6px;
+  border: 1.5px solid white;
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 120ms ease-out;
 
+  &:hover {
+    opacity: 0.85;
+  }
+`;
