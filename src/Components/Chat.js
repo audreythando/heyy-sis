@@ -1,11 +1,13 @@
 import styled from "styled-components";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import GroupIcon from "@mui/icons-material/Group";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
+import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
+import GifBoxOutlinedIcon from "@mui/icons-material/GifBoxOutlined";
+import SendIcon from "@mui/icons-material/Send";
 import { useSelector } from "react-redux";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  selectChannelId,
-  selectChannelName,
-} from "../features/Channel/channelSlice";
 import {
   addDoc,
   collection,
@@ -20,31 +22,25 @@ import {
   selectName,
   selectPhoto,
 } from "../features/User/userSlice";
-import Messager from './Messager'
-import { useNavigate } from "react-router-dom";
+import Messager from "./Messager";
 
-function Chat() {
+function Chat({ channelId, channelName }) {
   const [portfo, setPortfo] = useState([]);
   const [input, setInput] = useState("");
-  const channelName = useSelector(selectChannelName);
-  const channelId = useSelector(selectChannelId);
   const [loading, setLoading] = useState(false);
   const name = useSelector(selectName);
   const shortName = name ? name.split(" ") : name;
   const photo = useSelector(selectPhoto);
   const email = useSelector(selectEmail);
-  const navigate = useNavigate();
   const scrollref = useRef(null);
 
   const Submit = async (e) => {
     e.preventDefault();
-    if (input.length <= 0) return;
-
-    if (loading) return;
+    if (input.trim().length <= 0 || loading || !channelId) return;
     setLoading(true);
 
     await addDoc(collection(db, "post", channelId, "message"), {
-      input: input,
+      input: input.trim(),
       username: shortName[0],
       photo: photo,
       email: email,
@@ -54,68 +50,85 @@ function Chat() {
     setInput("");
     setLoading(false);
   };
-  const ScrollDown = () => {
-    scrollref.current.scrollIntoView({
-      behavior: "smooth",
-    });
-  };
 
   useEffect(() => {
     if (scrollref.current) {
-      ScrollDown();
+      scrollref.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [scrollref]);
-
-  useEffect(() => {
-    if (channelId) {
-      onSnapshot(
-        query(
-          collection(db, "post", channelId, "message"),
-          orderBy("timestamp", "asc")
-        ),
-        (snapshot) => setPortfo(snapshot.docs)
-      );
-    }
-  }, [channelId]);
+  }, [portfo]);
 
   useEffect(() => {
     if (!channelId) {
-      navigate("/");
+      setPortfo([]);
+      return;
     }
-  }, [channelId, navigate]);
+    return onSnapshot(
+      query(
+        collection(db, "post", channelId, "message"),
+        orderBy("timestamp", "asc")
+      ),
+      (snapshot) => setPortfo(snapshot.docs)
+    );
+  }, [channelId]);
+
+  if (!channelId) {
+    return (
+      <Container>
+        <EmptyState>
+          <h2>Pick a channel to start chatting</h2>
+          <p>Choose one from the Channels list, or create a new one.</p>
+        </EmptyState>
+      </Container>
+    );
+  }
 
   return (
     <Container>
-      <Header>
-        <span> # {channelName}</span>
-        <InfoOutlinedIcon style={{ cursor: "pointer" }} />
-      </Header>
+      <ChatHeader>
+        <TitleBlock>
+          <h2># {channelName}</h2>
+          <p>A safe space to connect and chat</p>
+        </TitleBlock>
+        <HeaderIcons>
+          <IconWithCount>
+            <GroupIcon fontSize="small" />
+          </IconWithCount>
+          <InfoOutlinedIcon fontSize="small" style={{ cursor: "pointer" }} />
+          <MoreVertIcon fontSize="small" style={{ cursor: "pointer" }} />
+        </HeaderIcons>
+      </ChatHeader>
+
       <Messanger>
         {portfo.map((post) => (
           <Messager
-            key={post?.id}
-            caption={post?.data().input}
-            username={post?.data().username}
-            email={post?.data().email}
-            photo={post?.data().photo}
-            id={post?.id}
+            key={post.id}
+            id={post.id}
+            channelId={channelId}
+            caption={post.data().input}
+            username={post.data().username}
+            email={post.data().email}
+            photo={post.data().photo}
+            pinned={post.data().pinned}
+            pinnedBy={post.data().pinnedBy}
           />
         ))}
         <SpaceBelow ref={scrollref} />
       </Messanger>
 
-      <Const>
-        <InputContainer onSubmit={Submit}>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            type="text"
-          />
-          <button disable={loading} onClick={Submit}>
-            {loading ? "sending" : "send"}
-          </button>
-        </InputContainer>
-      </Const>
+      <InputContainer onSubmit={Submit}>
+        <SideIcon fontSize="small" />
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          type="text"
+        />
+        <SideIcon as={InsertEmoticonIcon} fontSize="small" />
+        <SideIcon as={GifBoxOutlinedIcon} fontSize="small" />
+        <SendButton disabled={loading} type="submit">
+          <SendIcon fontSize="small" />
+        </SendButton>
+      </InputContainer>
     </Container>
   );
 }
@@ -127,59 +140,121 @@ const Container = styled.div`
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 `;
-const Header = styled.div`
+
+const ChatHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  a {
-    padding: 4px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f4d9ee;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #3a1a38;
   }
-  span {
-    font-weight: 700;
+  p {
+    font-size: 12.5px;
+    color: #8a6b87;
+    margin-top: 2px;
   }
 `;
 
-const InputContainer = styled.form`
-  position: fixed;
-  bottom: 30px;
-  z-index: 999999;
-  max-width: 42rem;
-  width: 91%;
-  padding: 1rem 1.5rem;
-  margin: 0 auto;
-  width: 600px;
-  border-radius: 999px;
-  border: 1px solid black;
+const TitleBlock = styled.div``;
+
+const HeaderIcons = styled.div`
   display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #8a6b87;
+  padding-top: 4px;
+`;
+
+const IconWithCount = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const Messanger = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 4px 90px;
+`;
+
+const SpaceBelow = styled.div`
+  margin-top: 10px;
+`;
+
+const InputContainer = styled.form`
+  position: sticky;
+  bottom: 0;
+  margin: 0 24px 20px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #f4d9ee;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(242, 15, 181, 0.08);
+
   input {
-    width: 100%;
+    flex: 1;
     border: none;
-    padding: 0 5px;
+    font-size: 13.5px;
+    color: #3a1a38;
     :focus {
       outline: none;
     }
   }
-  button {
-    border: none;
-    cursor: pointer;
-    background-color: transparent;
-    font-weight: 600;
-    color: rgb(96 165 250);
-    margin-left: 10px;
+`;
+
+const SideIcon = styled(AddIcon)`
+  color: #b98cae;
+  cursor: pointer;
+  &:hover {
+    color: #f20fb5;
   }
 `;
 
-const Const = styled.div`
+const SendButton = styled.button`
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  background: #f20fb5;
+  color: white;
   display: flex;
+  align-items: center;
   justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 120ms ease-out;
+
+  &:hover {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 `;
 
-const SpaceBelow = styled.div`
-  margin-top: 40px;
-`;
+const EmptyState = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #8a6b87;
+  padding: 40px;
 
-const Messanger = styled.div`
-  max-height: 550px;
-  overflow-y: auto;
+  h2 {
+    color: #3a1a38;
+    margin-bottom: 6px;
+  }
 `;
