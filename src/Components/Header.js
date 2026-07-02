@@ -1,46 +1,53 @@
-
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
 import styled from "styled-components";
 import SearchIcon from "@mui/icons-material/Search";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Avatar } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectName, selectPhoto } from "../features/User/userSlice";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase";
-import { useDispatch } from "react-redux";
+import { setLogOut } from "../features/User/userSlice";
 
+// Top bar: search, notifications, theme toggle (placeholder), account menu.
 function Header() {
   const name = useSelector(selectName);
-  const dispatch = useDispatch();
-  const shortName = name ? name.split(" ") : name;
   const photo = useSelector(selectPhoto);
-  const SignOut = async () => {
-    await signOut(auth).then(
-      dispatch({ name: null, email: null, photo: null })
-    );
+  const dispatch = useDispatch();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    dispatch(setLogOut());
   };
+
   return (
     <Wrapper>
-      <Container>
-        <Nav>
-          <Left>
-            <Link to="/">
-              <img src="/img/sislogo.jpg" alt="logo" />
-            </Link>
-          </Left>
-          <Center>
-            <InputContainer>
-              <Searchs />
-              <input type="text" />
-            </InputContainer>
-          </Center>
-          <Right>
-            <Avatars src={photo} onClick={SignOut} />
-            <span>{shortName[0]}</span>
-          </Right>
-        </Nav>
-      </Container>
+      <SearchBox>
+        <SearchIcon fontSize="small" />
+        <input placeholder="Search..." />
+      </SearchBox>
+
+      <Right>
+        <IconButton title="Notifications">
+          <NotificationsNoneIcon />
+        </IconButton>
+        <IconButton title="Toggle theme (coming soon)">
+          <DarkModeOutlinedIcon />
+        </IconButton>
+        <Account onClick={() => setMenuOpen((v) => !v)}>
+          <Avatar src={photo} alt={name} sx={{ width: 34, height: 34 }} />
+          <span>{name}</span>
+          <ExpandMoreIcon fontSize="small" />
+          {menuOpen && (
+            <Menu>
+              <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+            </Menu>
+          )}
+        </Account>
+      </Right>
     </Wrapper>
   );
 }
@@ -48,100 +55,81 @@ function Header() {
 export default Header;
 
 const Wrapper = styled.div`
-  background-color: rgb(242, 15, 181);
-  padding: 10px 0;
-`;
-const Container = styled.div`
-  max-width: 1124px;
-  margin: 0 auto;
-  background-color: "black";
-`;
-const Nav = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #f4d9ee;
 `;
-const Left = styled.div`
-  width: 2.2rem;
-  animation: Rotate 1s linear infinite;
-  margin: 0 5px;
-  @media (min-width: 765px) {
-    margin: 0 15px;
-  }
-  img {
-    width: 160%;
-    object-fit: contain;
-    animation: rotate 2s linear infinite;
-  }
-  @media (min-width: 765px) {
-    margin: 0;
-  }
-  cursor: pointer;
-  a {
-    font-weight: 700;
-  }
-`;
-const Center = styled.div`
-  display: none;
-  @media (min-width: 1024px) {
-    display: inline-flex;
-    align-items: center;
-    width: 100%;
-  }
-`;
-const InputContainer = styled.div`
+
+const SearchBox = styled.div`
+  flex: 1;
+  max-width: 420px;
   display: flex;
   align-items: center;
-  width: 40%;
-  margin: 0 auto;
-  border-radius: 20px;
-  background-color: rgba(93, 61, 94, 255);
+  gap: 8px;
+  background: #fdf1fa;
+  border-radius: 999px;
+  padding: 9px 16px;
+  color: #b98cae;
+
   input {
     flex: 1;
-    margin: 0 2px;
     border: none;
-    background-color: transparent;
-    font-weight: 700;
-    color: white;
-    :focus {
-      outline: none;
-    }
-  }
-`;
-
-const Searchs = styled(SearchIcon)`
-  pointer-events: none;
-  color: rgba(107, 114, 128, 1);
-  margin-left: 2px;
-`;
-
-const Avatars = styled(Avatar)`
-  transition: opacity 150ms ease-out;
-  cursor: pointer;
-  :hover {
-    opacity: 0.75;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    color: #3a1a38;
   }
 `;
 
 const Right = styled.div`
   display: flex;
   align-items: center;
-  span {
-    font-weight: 700;
-    color: #fcfafc;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 15px;
-    margin: 5px;
-    @media (min-width: 765px) {
-      margin-left: 10;
-    }
-    transition: opacity 150ms ease-out;
-    @media (min-width: 1024px) {
-      margin-left: 10px;
-    }
-    :hover {
-      opacity: 0.75;
-    }
+  gap: 14px;
+`;
+
+const IconButton = styled.div`
+  color: #b98cae;
+  cursor: pointer;
+  display: flex;
+  &:hover {
+    color: #f20fb5;
+  }
+`;
+
+const Account = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  color: #3a1a38;
+`;
+
+const Menu = styled.div`
+  position: absolute;
+  top: 42px;
+  right: 0;
+  background: white;
+  border: 1px solid #f4d9ee;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(242, 15, 181, 0.15);
+  min-width: 130px;
+  overflow: hidden;
+  z-index: 50;
+`;
+
+const MenuItem = styled.div`
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a1a38;
+  &:hover {
+    background: #fff3fb;
   }
 `;
