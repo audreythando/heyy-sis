@@ -11,20 +11,22 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   const SignIn = async () => {
-    await signInWithPopup(auth, provider).then((result) => {
-      if (loading) return;
-      setLoading(true);
+    if (loading) return;
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, provider);
       const user = result.user;
       dispatch(
         setLogin({
           name: user.displayName,
           photo: user.photoURL,
           email: user.email,
+          uid: user.uid,
         })
       );
-    });
-
-    setLoading(false);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <BackgroundColor>
