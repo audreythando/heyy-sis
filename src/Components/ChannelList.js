@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import { selectEmail, selectName } from "../features/User/userSlice";
 import SidebarList from "./SidebarList";
 
-// The white "Channels" column shown in the middle of the layout.
 function ChannelList({ addRequestSignal }) {
   const [channels, setChannels] = useState([]);
   const email = useSelector(selectEmail);
@@ -42,7 +41,7 @@ function ChannelList({ addRequestSignal }) {
 
   useEffect(() => {
     if (addRequestSignal) makeChannel();
-  }, [addRequestSignal]);
+  }, [addRequestSignal, makeChannel]);
 
   return (
     <Container>
