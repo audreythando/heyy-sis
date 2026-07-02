@@ -1,70 +1,60 @@
 import { Delete } from "@mui/icons-material";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { deleteDoc, doc } from "firebase/firestore";
 import React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { setChannel } from "../features/Channel/channelSlice";
 import db from "../firebase/firebase";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { selectEmail, selectName } from "../features/User/userSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { selectEmail } from "../features/User/userSlice";
 
-function SidebarList({ title, Icon, creator, channelName, id, sideEmail }) {
+const ICONS = ["💕", "🤝", "🎯", "💖", "🏆", "🙂", "✨", "🌸"];
+const iconFor = (id) => ICONS[Math.abs(hash(id)) % ICONS.length];
+const hash = (str) =>
+  (str || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+
+const timeAgo = (timestamp) => {
+  if (!timestamp?.toDate) return "";
+  const diffMs = Date.now() - timestamp.toDate().getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(hrs / 24)}d`;
+};
+
+function SidebarList({ title, description, creator, id, sideEmail, timestamp }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const name = useSelector(selectName);
-  const shortName = name ? name.split(" ") : name;
+  const { id: activeId } = useParams();
   const email = useSelector(selectEmail);
-
-  const MakeChannel = async () => {
-    const channelName = prompt("Enter a channel name");
-
-    if (channelName.length < 3) return;
-
-    await addDoc(collection(db, "post"), {
-      channelName: channelName,
-      email: email,
-      timestamp: serverTimestamp(),
-      name: shortName[0],
-    });
-  };
+  const active = activeId === id;
 
   const SelectChannel = () => {
-    if (title || id) {
-      dispatch(setChannel({ name: title, id: id }));
-      navigate(`/chat/${id}`);
-    }
+    dispatch(setChannel({ name: title, id }));
+    navigate(`/chatroom/${id}`);
   };
 
-  const deleteSibarChannel = async () => {
+  const deleteSidebarChannel = async (e) => {
+    e.stopPropagation();
     if (email === sideEmail) {
       await deleteDoc(doc(db, "post", id));
     }
   };
-  return (
-    <Container onClick={channelName ? MakeChannel : SelectChannel}>
-      {Icon && <Icon fontSize="small" styles={{ paddingLeft: 20 }} />}
-      {Icon ? (
-        <h3>{title}</h3>
-      ) : (
-        <Div>
-          <Span>
-            <span>#</span>
-            {title}
-          </Span>
-          <Card>
-            <h4>creator</h4>
-            <h4> {creator}</h4>
-          </Card>
 
-          <Deletes onClick={deleteSibarChannel} />
-        </Div>
+  return (
+    <Container onClick={SelectChannel} active={active}>
+      <IconBubble>{iconFor(id)}</IconBubble>
+      <Info>
+        <Row>
+          <Name>#{title}</Name>
+          <Time>{timeAgo(timestamp)}</Time>
+        </Row>
+        <Preview>{description || `by ${creator || "someone"}`}</Preview>
+      </Info>
+      {email === sideEmail && (
+        <DeleteBtn onClick={deleteSidebarChannel} fontSize="small" />
       )}
     </Container>
   );
@@ -75,66 +65,71 @@ export default SidebarList;
 const Container = styled.div`
   display: flex;
   align-items: center;
-  padding-left: 2px;
-  font-size: 12px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
   cursor: pointer;
-  padding: 10px 10px;
-  transition: all 150ms ease-out;
-  :hover {
-    opacity: 0.9;
-    background-color: #340e36;
-  }
-  h3 {
-    color: rgba(119, 84, 119, 255) !important;
-    padding-left: 10px;
-  }
-`;
+  margin-bottom: 4px;
+  background-color: ${(p) => (p.active ? "#FFE9F8" : "transparent")};
+  transition: background-color 120ms ease-out;
 
-const Span = styled.div`
-  display: flex;
-  align-items: center;
-  font-size: small;
-  span {
-    font-size: 15px;
-    margin-right: 10px;
-  }
-`;
-
-const Div = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  width: 100%;
-  max-height: 20px;
-`;
-
-const Card = styled.div`
-  position: absolute;
-  z-index: 999999;
-  background-color: white;
-  top: -11px;
-  right: 20px;
-  left: 50px;
-  padding: 5px;
-  border-radius: 20px;
-  opacity: 0;
-  transition: opacity 150ms ease-out;
-  display: flex;
-  align-items: center;
-  h4 {
-    margin: 0 1px;
-  }
   &:hover {
+    background-color: #fff3fb;
+  }
+  &:hover .delete-btn {
     opacity: 1;
   }
 `;
 
-const Deletes = styled(Delete)`
-  height: 1rem !important;
+const IconBubble = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #ffe9f8;
   display: flex;
-  justify-content: flex-end;
-  :hover {
-    color: rgba(239, 68, 68, 1);
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+`;
+
+const Info = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+`;
+
+const Name = styled.span`
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #3a1a38;
+`;
+
+const Time = styled.span`
+  font-size: 11px;
+  color: #b98cae;
+  flex-shrink: 0;
+`;
+
+const Preview = styled.div`
+  font-size: 12px;
+  color: #8a6b87;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const DeleteBtn = styled(Delete)`
+  opacity: 0;
+  color: #d69cc6;
+  transition: opacity 120ms ease-out;
+  &:hover {
+    color: #ef4444;
   }
 `;
